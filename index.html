@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -16,6 +16,8 @@
             --accent-color: #e5b95f;
             --text-color: #f5f5f5;
             --light-gray: #aaa;
+            --success-color: #4caf50;
+            --error-color: #f44336;
             --transition: all 0.3s ease;
         }
 
@@ -86,6 +88,11 @@
         .btn:hover {
             background: var(--accent-color);
             color: var(--primary-color);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         /* Header */
@@ -374,6 +381,37 @@
             border-color: var(--accent-color);
         }
 
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--light-gray);
+        }
+
+        /* Form Status Messages */
+        .form-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .form-status.success {
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .form-status.error {
+            background-color: rgba(244, 67, 54, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        .form-status.show {
+            display: block;
+        }
+
         .social-links {
             display: flex;
             justify-content: center;
@@ -463,6 +501,22 @@
 
         .close-modal:hover {
             color: var(--accent-color);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--text-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Responsive Styles */
@@ -694,25 +748,29 @@
         <div class="container">
             <h2 class="section-title">Liên Hệ</h2>
             <div class="contact-form">
-                <form>
+                <form id="contact-form" action="https://formspree.io/f/xdkogqpz" method="POST">
                     <div class="form-group">
                         <label for="name">Họ Tên</label>
-                        <input type="text" id="name" required>
+                        <input type="text" id="name" name="name" required placeholder="Nhập họ tên của bạn">
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" required>
+                        <input type="email" id="email" name="email" required placeholder="Nhập địa chỉ email của bạn">
                     </div>
                     <div class="form-group">
                         <label for="subject">Chủ Đề</label>
-                        <input type="text" id="subject" required>
+                        <input type="text" id="subject" name="subject" required placeholder="Nhập chủ đề tin nhắn">
                     </div>
                     <div class="form-group">
                         <label for="message">Tin Nhắn</label>
-                        <textarea id="message" rows="5" required></textarea>
+                        <textarea id="message" name="message" rows="5" required placeholder="Nhập nội dung tin nhắn của bạn"></textarea>
                     </div>
-                    <button type="submit" class="btn">Gửi Tin Nhắn</button>
+                    <button type="submit" class="btn" id="submit-btn">
+                        <span class="btn-text">Gửi Tin Nhắn</span>
+                    </button>
                 </form>
+
+                <div class="form-status" id="form-status"></div>
 
                 <div class="social-links">
                     <a href="https://www.instagram.com/wrxhard/" target="_blank"><i class="fab fa-instagram"></i></a>
@@ -810,6 +868,68 @@
             if (e.target === modal) {
                 modal.classList.remove('open');
             }
+        });
+
+        // Contact Form Handling
+        const contactForm = document.getElementById('contact-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.querySelector('.btn-text');
+        const formStatus = document.getElementById('form-status');
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span>Đang gửi...';
+            
+            // Hide previous status messages
+            formStatus.classList.remove('show', 'success', 'error');
+            
+            try {
+                const formData = new FormData(contactForm);
+                
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    // Success
+                    formStatus.textContent = 'Cảm ơn bạn! Tin nhắn đã được gửi thành công. Tôi sẽ phản hồi sớm nhất có thể.';
+                    formStatus.classList.add('success', 'show');
+                    contactForm.reset();
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            } catch (error) {
+                // Error
+                formStatus.textContent = 'Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua email.';
+                formStatus.classList.add('error', 'show');
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                btnText.textContent = 'Gửi Tin Nhắn';
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // Close mobile menu if open
+                    nav.classList.remove('active');
+                }
+            });
         });
     </script>
 </body>

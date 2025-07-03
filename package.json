@@ -1,0 +1,15 @@
+{
+  "name": "phuc-nguyen-photography",
+  "version": "1.0.0",
+  "description": "Photography portfolio website for Phúc Nguyễn",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "type": "module"
+}
